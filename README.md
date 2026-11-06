@@ -1,4 +1,4 @@
-# Campus Reports — Campus Incident Reporting App
+# Campus Reports Campus Incident Reporting App
 
 Flutter app where students report campus issues (facilities, water, electricity,
 safety, sanitation) and authorized staff review them and update their status.
