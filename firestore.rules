@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isStaff() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff';
+    }
+
+    // ---- User profiles -----------------------------------------------------
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isStaff());
+      // Users may only create their own profile, and only as a student.
+      allow create: if signedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.role == 'student';
+      // Users may edit their profile but never change their own role.
+      allow update: if signedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    // ---- Incidents ---------------------------------------------------------
+    match /incidents/{incidentId} {
+      // Students see their own reports; staff see everything.
+      allow read: if signedIn() && (resource.data.reportedBy == request.auth.uid || isStaff());
+
+      // Anyone signed in can report, as themselves, starting at 'submitted'.
+      allow create: if signedIn()
+                    && request.resource.data.reportedBy == request.auth.uid
+                    && request.resource.data.status == 'submitted';
+
+      // ONLY staff can change status, and only the status/updatedAt fields.
+      allow update: if isStaff()
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['status', 'updatedAt']);
+
+      allow delete: if false;
+
+      match /statusHistory/{entryId} {
+        allow read: if signedIn() && (
+          get(/databases/$(database)/documents/incidents/$(incidentId)).data.reportedBy == request.auth.uid
+          || isStaff());
+        allow create: if signedIn()
+                      && request.resource.data.changedBy == request.auth.uid
+                      && (isStaff() || request.resource.data.status == 'submitted');
+        allow update, delete: if false;
+      }
+    }
+  }
+}
