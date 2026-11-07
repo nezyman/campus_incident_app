@@ -82,6 +82,19 @@ void main() {
           const IncidentFilter(status: IncidentStatus.submitted, query: 'projector'));
       expect(r, isEmpty);
     });
+    test('filters by category', () {
+      final r = applyFilter(
+          items, const IncidentFilter(category: IncidentCategory.sanitation));
+      expect(r.map((e) => e.id), ['3']);
+    });
+    test('category and status combine', () {
+      final r = applyFilter(
+          items,
+          const IncidentFilter(
+              category: IncidentCategory.water,
+              status: IncidentStatus.resolved));
+      expect(r, isEmpty);
+    });
   });
 
   testWidgets('StatusChip shows the status label', (tester) async {
