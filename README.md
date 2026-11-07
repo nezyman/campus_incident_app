@@ -7,18 +7,25 @@ safety, sanitation) and authorized staff review them and update their status.
 - Flutter + Riverpod (Notifier / AsyncNotifier / StreamProvider)
 - Firebase Authentication (email + password)
 - Cloud Firestore (users, incidents, incidents/{id}/statusHistory)
-- Firebase Storage (incident photos)
+- Cloudinary (incident photos, unsigned uploads; the image URL is stored in Firestore)
+
+## Why Cloudinary instead of Firebase Storage
+Firebase Storage now requires the paid Blaze plan with a payment card. The course
+facilitator approved using another cloud service for image storage, so photos are
+uploaded to Cloudinary's free plan and only the returned HTTPS URL is saved in the
+incident document.
 
 ## Architecture
 ```
 lib/
-  core/          theme, utils, reusable widgets
+  core/          theme, config, utils, reusable widgets
   models/        AppUser, Incident, StatusEntry
-  repositories/  AuthRepository, IncidentRepository (only layer touching Firebase)
+  repositories/  AuthRepository, IncidentRepository (Firebase data access)
+  services/      ImageUploadService (Cloudinary upload)
   providers/     Riverpod providers + controllers (state management)
   screens/       auth, home (student), staff, incidents, profile, shared
 ```
-UI -> providers/controllers -> repositories -> Firebase.
+UI -> providers/controllers -> repositories/services -> Firebase / Cloudinary.
 
 ## Roles
 - `student` (default on registration): create reports, view own reports.
@@ -28,9 +35,11 @@ UI -> providers/controllers -> repositories -> Firebase.
 ## Setup
 1. `flutter pub get`
 2. `dart pub global activate flutterfire_cli && flutterfire configure`
-3. Enable Email/Password sign-in, create Firestore + Storage in the Firebase console.
-4. Deploy `firestore.rules` and `storage.rules` (console Rules tab or `firebase deploy --only firestore:rules,storage`).
-5. `flutter run` on an emulator or device.
+3. Enable Email/Password sign-in and create Firestore in the Firebase console.
+4. Publish `firestore.rules` in the Firestore Rules tab.
+5. Create a free Cloudinary account, add an **unsigned** upload preset, and put the
+   cloud name and preset name in `lib/core/config.dart`.
+6. `flutter run` on an emulator or device.
 
 ## Tests
 `flutter test`
