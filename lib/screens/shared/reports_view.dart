@@ -6,8 +6,6 @@ import '../../core/widgets/incident_card.dart';
 import '../../models/incident.dart';
 import '../../providers/providers.dart';
 
-/// Searchable, filterable list used by "My Reports" (students) and the
-/// staff dashboard (all reports).
 class ReportsView extends ConsumerWidget {
   const ReportsView({super.key, required this.title, this.header});
   final String title;
@@ -35,6 +33,25 @@ class ReportsView extends ConsumerWidget {
       );
     }
 
+    Widget categoryChip(String label, IncidentCategory? category) {
+      final selected = filter.category == category;
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: ChoiceChip(
+          label: Text(label),
+          selected: selected,
+          showCheckmark: false,
+          selectedColor: kPrimarySoft,
+          side: BorderSide(color: selected ? kPrimary : const Color(0xFFE3E3EA)),
+          labelStyle: TextStyle(
+              color: selected ? kPrimary : Colors.black87,
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400),
+          onSelected: (_) => notifier.setCategory(category),
+        ),
+      );
+    }
+
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,7 +61,7 @@ class ReportsView extends ConsumerWidget {
             child: Text(title,
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
           ),
-          if (header != null) header!,
+          ?header,
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: TextField(
@@ -62,6 +79,15 @@ class ReportsView extends ConsumerWidget {
             child: Row(children: [
               chip('All', null),
               for (final s in IncidentStatus.values) chip(s.label, s),
+            ]),
+          ),
+          const SizedBox(height: 4),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(children: [
+              categoryChip('Any category', null),
+              for (final c in IncidentCategory.values) categoryChip(c.label, c),
             ]),
           ),
           const SizedBox(height: 8),
