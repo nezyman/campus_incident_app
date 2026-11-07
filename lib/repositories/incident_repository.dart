@@ -1,15 +1,15 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 import '../models/app_user.dart';
 import '../models/incident.dart';
+import '../services/image_upload_service.dart';
 
 class IncidentRepository {
-  IncidentRepository(this._db, this._storage);
+  IncidentRepository(this._db, this._images);
   final FirebaseFirestore _db;
-  final FirebaseStorage _storage;
+  final ImageUploadService _images;
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _db.collection('incidents');
@@ -49,9 +49,7 @@ class IncidentRepository {
 
     if (photo != null) {
       try {
-        final ref = _storage.ref('incidents/${user.uid}/${doc.id}.jpg');
-        await ref.putFile(photo, SettableMetadata(contentType: 'image/jpeg'));
-        photoUrl = await ref.getDownloadURL();
+        photoUrl = await _images.upload(photo);
       } catch (_) {
         photoUrl = null;
         photoSaved = false;
