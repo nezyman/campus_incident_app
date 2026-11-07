@@ -36,7 +36,7 @@ class IncidentCard extends StatelessWidget {
                   child: incident.photoUrl != null
                       ? Image.network(incident.photoUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _fallback())
+                          errorBuilder: (_, _, _) => _fallback())
                       : _fallback(),
                 ),
               ),

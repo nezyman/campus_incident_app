@@ -92,12 +92,11 @@ class IncidentDetailsScreen extends ConsumerWidget {
                       : const SizedBox(
                           height: 180,
                           child: Center(child: CircularProgressIndicator())),
-                  errorBuilder: (_, __, ___) => const SizedBox(
+                  errorBuilder: (_, _, _) => const SizedBox(
                       height: 80, child: Center(child: Text('Could not load photo'))),
                 ),
               ),
             ],
-            // Staff-only controls (also enforced by Firestore security rules)
             if (user != null && user.isStaff) ...[
               const SizedBox(height: 28),
               _StaffStatusUpdater(incident: incident),
@@ -118,7 +117,7 @@ class _Timeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final times = <IncidentStatus, DateTime>{};
     for (final h in history) {
-      times[h.status] = h.timestamp; // latest entry per status wins
+      times[h.status] = h.timestamp;
     }
 
     Widget step(IncidentStatus s) {
